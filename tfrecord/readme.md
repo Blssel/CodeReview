@@ -93,7 +93,7 @@ TF的多线程训练是TF框架重新设计的，不是简单地使用python语�
 假设我们按照上述方式将数据保存到了两个`tfrecords`文件中，分别为'1.tfrecords'和'2.tfrecords'，保存在DATA_ROOT路径中，那么我们分几步读取数据，参考如下代码：
 - 1) 读取`tfrecords`文件名到队列中，使用`tf.train.string_input_producer`函数，该函数可以接收一个文件名列表，并自动返回一个对应的文件名队列`filename_queue`，之所以用队列是为了后续多线程考虑（队列和多线程经常搭配使用）
 - 2) 实例化`tf.TFRecordReader()`类生成`reader`对象，接收`filename_queue`参数，并读取该队列中文件名对应的文件，得到`serialized_example`(读到的就是.tfrecords序列化文件)
-- 3) 解析，注意这里的解析不是用的`Example`对象里的函数，而是`tf.parse_single_example`函数，该函数能从`serialized_example`中解析出一条数据，当然也可以用`tf.parse_example`解析多条数据，此处暂不赘述。这里`tf.parse_single_example`函数传入参数`tf.parse_example`和`features`，其中`features`是字典的形式，指定每个key的解析方式，比如`image_raw`使用`tf.FixedLenFeature`方法解析，这种解析方式返回一个Tensor，大多数解析方式也都是这种，另一种是`tf.VarLenFeature`方法，返回`SparseTensor`，用于处理稀疏数据，不赘述。这里还要注意必须告诉解析函数以何种数据类型解析，这必须与生成`TFRecords`文件时指定的数据类型一致。最后返回`features`是一个字典，里面存放了每一项的解析结果。
+- 3) 解析，注意这里的解析不是用的`Example`对象里的函数，而是`tf.parse_single_example`函数，该函数能从`serialized_example`中解析出一条数据，当然也可以用`tf.parse_example`解析多条数据，此处暂不赘述。这里`tf.parse_single_example`函数传入参数`serialized_example`和`features`，其中`features`是字典的形式，指定每个key的解析方式，比如`image_raw`使用`tf.FixedLenFeature`方法解析，这种解析方式返回一个Tensor，大多数解析方式也都是这种，另一种是`tf.VarLenFeature`方法，返回`SparseTensor`，用于处理稀疏数据，不赘述。这里还要注意必须告诉解析函数以何种数据类型解析，这必须与生成`TFRecords`文件时指定的数据类型一致。最后返回`features`是一个字典，里面存放了每一项的解析结果。
 - 4) 最后只要读出`features`中的数据即可。比如，`features['label']`,`features['pixels']`。但要注意的是，此时的`image_raw`依然是字符串类型的(可以看写入代码中的`image_raw`)，需要进一步还原成像素数组，用TF提供的函数`tf.decode_raw`来搞定`images = tf.decode_raw(features['image_raw'],tf.uint8)`。
 
 至此，就定义好了完成一次数据读取的代码，有了它，下面的训练时的多线程方法就有了数据来源，下节讨论。
