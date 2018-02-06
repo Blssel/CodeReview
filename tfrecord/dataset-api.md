@@ -29,13 +29,20 @@ remove_undocumented(__name__)
 
 # 用Datasets API读取数据
 用Datasets API读取数据主要分为以下几个步骤：
-- 1) 创建`tf.data.Dataset`对象。`tf.data.Dataset`类可以读入任何数据并封装。创建`Dataset`对象需要借助`Dataset`本身提供的方法，最常见的是`tf.data.Dataset.from_tensors() `和`tf.data.Dataset.from_tensor_slices()`方法，以后者为例(其详细作用见代码注释)，如下代码`Example1`中我们得到了一个`dataset`对象，该对象就代表了整个要用来训练的数据集，里面封装着所有文件的文件名和label，而这仅仅是文件名而已，并非真正的文件内容，下面才是真正厉害的地方，只要再调用一个函数，就可以将`dataset`对象中的文件名转化为对应的文件内容（图片像素矩阵），如下代码`Example2`
+- 1) 创建`tf.data.Dataset`对象。`tf.data.Dataset`类可以读入任何数据并封装。创建`Dataset`对象需要借助`Dataset`本身提供的方法，最常见的是`tf.data.Dataset.from_tensors() `和`tf.data.Dataset.from_tensor_slices()`方法，以后者为例(其详细作用见代码注释)，如下代码`Example1`中我们得到了一个`dataset`对象，该对象就代表了整个要用来训练的数据集，里面封装着所有文件的文件名和label。
+- 2) 调用`Dataset.map()`方法转换`Dataset`中的元素。什么意思？大家应该已经发现，1)中创建的`Dataset`类的对象`dataset`中存放的仅仅是数据的文件名和`label`而已，而我们需要的是该文件名对应的文件内容，怎么办呢？用`Dataset.map()`方法，`Dataset.map()`方法接收的参数是一个函数名`map_func`，你需要额外自己书写`map_func()`方法，`map_func()`方法中你只要实现将`Dataset`对象中封装的一个元素从文件名转换到真实的文件数据即可。这样一来，`Dataset.map()`函数根据你提供的`map_func`函数就可以将`Dataset`对象中的每一个元素都转换（或者说映射）成真正的文件数据了，也就是说此时`Dataset`中存放的不再是文件名和`label`的存储，而是其对应的文件内容和`label`的存储了（当然`Dataset.map()`函数还有一个参数`num_parallel_calls`，用来指定并行数，默认为`None`即串行，其实这种操作特别像python中的线程池）。如下代码`Example2`，就将`Example1`中的`filename`转化成了对应的图片矩阵存在了`Dataset`对象中:
+> 提问：`Dataset`对象一次性把所有的文件都存了进来？那得消耗多少内存啊？
+> 答：看上去`Dataset`对象是一次性把所有的文件都存了进来，但内部真正实现的时候并没有，也是要用的时候才真正从磁盘中取数据，通过管道机制，源源不断地将数据输送出来，让人看起来以为数据都一次性保存了下来，这其实是给开发者营造的一种假象而已。但我们按照它营造的假象编程会很方便，无需关心内存的问题。
+- 3) 读取数据
+
 ```python
 # Example1
+# tf.data.Dataset.from_tensor_slices(tensors)该函数的功能是返回一个Dataset对象，对象中封装了tensors，并且将tensors按第一个维度切分成一个个元素，以此为单元存放。但事实上该函数的参数并不一定是tensor，也可以是numpy数组，甚至字典+数组。只要保证提供的数组可按第一个维度切分就行（如果时提供的参数中包含两个或以上数组，像Example1中这样，必须保证所提供的所有数组或tensor的第一个维度数一致，比如本例中filenames和labels维度都是(5,)，所以第一个维度都是5，所以可以切分存储成("/var/data/image1.jpg",0),(""/var/data/image2.jpg"",37),...这样的一个一个的元素；再比如提供像{"a": np.array([1.0, 2.0, 3.0, 4.0, 5.0]), "b": np.random.uniform(size=(5, 2))}这样的参数，则切分成{"a": 1.0, "b": [0.9, 0.1]}， {"a": 2.0, "b": [0.4, 0.5]},...这样的形式存储）
 filenames = tf.constant(["/var/data/image1.jpg", "/var/data/image2.jpg", ...])
 labels = tf.constant([0, 37, ...])
-# 此时dataset中的一个元素是(filename, label)
+# 生成Dataset类的对象，dataset。此时dataset中的一个元素是("/var/data/image1.jpg",0),(""/var/data/image2.jpg"",37),...
 dataset = tf.data.Dataset.from_tensor_slices((filenames, labels))
+
 
 # Example2
 def _parse_function(filename, label):
@@ -63,20 +70,6 @@ dataset = dataset.map(_parse_function)
 
 
 
-在最新的TF中，对数据读取的方式
-
-taset API是TensorFlow 1.3版本中引入的一个新的模块，主要服务于数据读取，构建输入数据的pipeline。
-
-此前，在TensorFlow中读取数据一般有两种方法：
-
-使用placeholder读内存中的数据
-
-使用queue读硬盘中的数据（关于这种方式，可以参考我之前的一篇文章：十图详解tensorflow数据读取机制）
-
-Dataset API同时支持从内存和硬盘的读取，相比之前的两种方法在语法上更加简洁易懂。此外，如果想要用到TensorFlow新出的Eager模式，就必须要使用Dataset API来读取数据。
-
-本文就来为大家详细地介绍一下Dataset API的使用方法（包括在非Eager模式和Eager模式下两种情况）。
-
 
 
 
@@ -86,3 +79,4 @@ Dataset API同时支持从内存和硬盘的读取，相比之前的两种方法
 
 # 参考
 [TensorFlow1.5官方文档:Importing Data](https://www.tensorflow.org/programmers_guide/datasets)
+[TensorFlow全新的数据读取方式：Dataset API入门教程](https://www.leiphone.com/news/201711/zV7yM5W1dFrzs8W5.html)
