@@ -1,6 +1,6 @@
 
 # 先修知识——protocol buffer
-TF框架中多处使用了protocol buffer，protocol buffer全称Google Protocol Buffer，简称Protobuf，是一种结构化数据存储格式，类似于常见的Json和xml，而且这种格式经过编译可以生成对应C++或Java或Python类的形式，即可以用编程语言读取或修改数据，不仅如此，还可以进一步将定义的结构化数据进行序列化，转化成二进制数据存下来或发送出去，非常适合做数据存储或 RPC 数据交换格式。更具体的介绍可以参考网上比较推荐的文章：[Google Protocol Buffer 的使用和原理](https://www.ibm.com/developerworks/cn/linux/l-cn-gpb/)。其实TensorFlow计算图思想的实现也是[基于protocol buffer](https://zhuanlan.zhihu.com/p/31308381)的，感兴趣的可以看一下，本文主要介绍TFRecords，TFRecords是TF官方推荐使用的数据存储形式，也是使用了protocol buffer，下面详细介绍其使用方法和原理。
+TF框架中多处使用了protocol buffer，protocol buffer全称Google Protocol Buffer，简称Protobuf，是一种结构化数据存储格式，类似于常见的Json和xml，而且这种格式经过编译可以生成对应C++或Java或Python类的形式，即可以用编程语言读取或修改数据，不仅如此，还可以进一步将定义的结构化数据进行序列化，转化成二进制数据存下来或发送出去，非常适合做数据存储或 RPC 数据交换格式。更具体的介绍可以参考网上比较推荐的文章：[Google Protocol Buffer 的使用和原理](https://www.ibm.com/developerworks/cn/linux/l-cn-gpb/)。其实TensorFlow计算图思想的实现也是[基于protocol buffer](https://zhuanlan.zhihu.com/p/31308381)的，感兴趣的可以看一下，本文主要介绍TFRecords，TFRecords是TF官方推荐使用的数据存储形式，也是使用了protocol buffer，下面结合TFRecords详细介绍其使用方法和原理。
 
 ### protocol buffer的使用
 参考[Google Protocol Buffer 的使用和原理](https://www.ibm.com/developerworks/cn/linux/l-cn-gpb/)可以发现，要得到本地存储的序列化数据，需要先定义.proto 文件，再编译成编程语言描述的类，然后实例化该类（该类也已自动生成setter getter修改类和序列化类等方法），并序列化保存到本地或进行传输。TFRecords的思想也是将数据集中的数据以结构化的形式存到.proto中，然后序列化存储到本地，方便使用时读取并还原数据，只不过TF又对这个过程进行了一点封装，看起来和protocol buffer原始的使用方式略有差别。
