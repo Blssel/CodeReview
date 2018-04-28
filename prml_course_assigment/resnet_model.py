@@ -1,10 +1,27 @@
 #coding:utf-8
 
-DEFAULT_DTYPE = tf.float32
+"""根据Kaiming He等人的Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun 
+Deep Residual Learning for Image Recognition. arXiv:1512.03385所搭建的
+ResNet50 为v1版，源代码来自GitHub tensorflow开源项目，由谷歌官方搭建，
+源码地址为：https://github.com/tensorflow/models/blob/master/official/resnet/resnet_model.py
 
+由Zhiyu Yin在学习过程中注释为中文，且仅作为学习使用。
+"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+import tensorflow as tf
+
+_BATCH_NORM_DECAY = 0.997
+_BATCH_NORM_EPSILON = 1e-5
+DEFAULT_VERSION = 2
+DEFAULT_DTYPE = tf.float32
+CASTABLE_TYPES = (tf.float16,)
+ALLOWED_TYPES = (DEFAULT_DTYPE,) + CASTABLE_TYPES
 
 ################################################################################
-# 为建立resnet的方便而编写的函数
+# 为建立resnet的方便而编写的函数:padding后的conv 以及padding方法本身
 ################################################################################
 
 def conv2d_fixed_padding(inputs, filters, kernel_size, strides, data_format):
@@ -80,14 +97,15 @@ def _bottleneck_block_v2(inputs, filters, training, projection_shortcut, strides
  
 
 def block_layer(inputs, filters, bottleneck, block_fn, blocks, strides,training, name, data_format):
-
+  # Bottleneck blocks end with 4x the number of filters as they start with
+  filters_out = filters * 4 if bottleneck else filters
   # 短连接映射  主要参数是filters 用以调整通道数
   def projection_shortcut(inputs):
     return conv2d_fixed_padding(inputs=inputs, filters=filters_out, kernel_size=1, strides=strides, data_format=data_format)
 
-  # 重复堆叠多次同样的残差块 (注意：每个block中的第一个block_layer才需要做短连接映射)
+  # 重复堆叠多次同样的残差块 (注意：每个block layer中的第一个block，即第一个残差块才需要做短连接映射)
   inputs = block_fn(inputs, filters, training, projection_shortcut, strides, data_format)
-  for _ in range(1, blocks):
+  for _ in range(1, blocks): #注意从1开始
     inputs = block_fn(inputs, filters, training, None, 1, data_format) # block_fn才是block_layer的计算函数
 
   return tf.identity(inputs, name)
@@ -181,8 +199,8 @@ class Model(object):
         inputs = tf.identity(inputs, 'initial_max_pool')
 
       for i, num_blocks in enumerate(self.block_sizes):
-        num_filters = self.num_filters * (2**i)
-        inputs = block_layer(inputs=inputs, filters=num_filters, bottleneck=self.bottleneck, block_fn=self.block_fn, blocks=num_blocks, strides=self.block_strides[i], training=training, name='block_layer{}'.format(i + 1), data_format=self.data_format)
+        num_filters = self.num_filters * (2**i)   # num_filters指代第一个卷积层使用的filter数量(64)
+        inputs = block_layer(inputs=inputs, filters=num_filters, bottleneck=self.bottleneck, block_fn=self.block_fn, blocks=num_blocks, strides=self.block_strides[i], training=training, name='block_layer{}'.format(i + 1), data_format=self.data_format) # 表示一个conv_x的结构，其中block_fn指一个building block的计算方法(依据不同版本而不同)
       
       inputs = batch_norm(inputs, training, self.data_format)
       inputs = tf.nn.relu(inputs)
