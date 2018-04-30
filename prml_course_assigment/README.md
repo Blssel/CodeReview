@@ -1,12 +1,12 @@
-# **调研报告**
+# **卷积神经网络调研报告**
 
 #### 小组成员：
 
 ##### 成员一：姓名：尹志雨    学号：2017Z8009061116
 
-##### 成员二：姓名：张超        学号：2017Z8009061120
+#####成员二：姓名：张超        学号：2017Z8009061120
 
-本作业及相关代码托管在GitHub上，如需查阅相关代码，可通过网址https://github.com/Blssel/TF-learing/tree/master/prml_course_assigment 访问
+本作业及相关代码托管在GitHub上，如需查阅相关代码，可通过网址https://github.com/Blssel/TF-learing/tree/master/prml_course_assigment访问
 
 ----------------------
 
@@ -136,4 +136,4 @@ v4研究了Inception模块结合Residual Connection能不能有改进？发现Re
 
 ## Batch Normalization
 
-![](https://img-blog.csdn.net/20170421111120014?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGhhbmNoYW8=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+![](https://note.youdao.com/yws/public/resource/3f007aef5f79a9fa8a01b51a43ab1108/xmlnote/398A92D72B90422C9F6B8E7AEAA5FC00/22467)
