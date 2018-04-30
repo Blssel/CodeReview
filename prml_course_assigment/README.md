@@ -6,7 +6,7 @@
 
 ##### 成员二：姓名：张超        学号：2017Z8009061120
 
-本作业及相关代码托管在GitHub上，如需查阅相关代码，可通过网址https://github.com/Blssel/TF-learing/tree/master/prml_course_assigment访问
+本作业及相关代码托管在GitHub上，如需查阅相关代码，可通过网址https://github.com/Blssel/TF-learing/tree/master/prml_course_assigment 访问
 
 ----------------------
 
