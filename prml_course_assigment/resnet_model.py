@@ -206,6 +206,14 @@ class Model(object):
       inputs = tf.nn.relu(inputs)
 
 
+      # 平均池化
+      axes = [2, 3] if self.data_format == 'channels_first' else [1, 2]
+      inputs = tf.reduce_mean(inputs, axes, keepdims=True)
+      inputs = tf.identity(inputs, 'final_reduce_mean')
 
+      inputs = tf.reshape(inputs, [-1, self.final_size])
+      inputs = tf.layers.dense(inputs=inputs, units=self.num_classes)
+      inputs = tf.identity(inputs, 'final_dense')
+      return inputs
 
 
