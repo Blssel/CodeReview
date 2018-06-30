@@ -5,6 +5,7 @@
 
 ### 随机梯度下降(SGD)
 随机梯度下降(Stochastic gradient descent)每次参数更新只考虑一个样本。它可以很好的克服上述缺点，但也存在自己的问题，那就是每次梯度下降的方向都存在极大地不确定性，归根到底还是样本量太小导致的，因此该方法在收敛过程中波动非常大，收敛速度非常慢，如下图所示。
+
 ![](https://note.youdao.com/yws/public/resource/3f007aef5f79a9fa8a01b51a43ab1108/xmlnote/WEBRESOURCE8a6a36866825e6a6015840ed991d3c6d/23072)
 
 ### Mini-batch 随机梯度下降(Mini-batch SGD)
