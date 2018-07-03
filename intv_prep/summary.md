@@ -17,10 +17,18 @@ Mini-batch gradient descent比较合适的在前两者之间取得了一个trade
 
 ## 常用优化策略或算法
 ### Momentum
+尽管Mini-batch gradient descent能够一定程度的解决优化时的不稳定性，但也只能是缓解而已，并非是从本质上解决的，Momentum在此基础上可以进一步缓解该问题，Momentum累积之前每次计算得到的梯度，并以一定的比率α衰减，同时以1-α的衰减加入新计算的梯度。这样的好处就是可以避免噪音数据带来的梯度更新方向的偏移，从而更快的收敛，同时，还可以一定程度的缓解因显存不够而导致的batch size设置不上去带来的无法收敛的尴尬。
+下面是Momentum的优化公式:
+
+![](https://note.youdao.com/yws/public/resource/3f007aef5f79a9fa8a01b51a43ab1108/xmlnote/WEBRESOURCE599231a8b98a3dc733462ce145718a0e/23074)
 
 ### Nesterov accelerated gradient
 
 ### Adagrad
+
+
+### RMSProp 算法
+RMSProp（Root Mean Square Prop，均方根支）算法是在对梯度进行指数加权平均的基础上，引入平方和平方根。具体过程为（省略了 l）：
 
 ### Adam
 
